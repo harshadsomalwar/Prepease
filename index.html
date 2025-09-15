@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Prepease — Sauces & Spreads with COD</title>
+  <style>
+    :root {
+      --brand: #ff4d2d;
+      --brand-dark: #e14020;
+      --accent: #ffb703;
+      --text: #1d1d1f;
+      --muted: #5f6368;
+      --bg: #fffdf8;
+      --card-bg: #ffffff;
+      --line: #ece7df;
+      --shadow: 0 10px 30px rgba(0,0,0,.06);
+      --radius: 14px;
+      --radius-sm: 10px;
+      --transition-speed: 0.4s;
+      --max-width: 1200px;
+    }
+    * { box-sizing: border-box; margin:0; padding:0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Ubuntu, "Helvetica Neue", Arial; color: var(--text); background: var(--bg); line-height: 1.6; }
+    img { max-width:100%; display:block; }
+    a { color: var(--brand); text-decoration: none; transition: color .3s; }
+    a:hover { color: var(--brand-dark); }
+
+    .container { width:100%; max-width: var(--max-width); margin: auto; padding: 0 20px; }
+
+    header { background: #fff; position: sticky; top:0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,.05); }
+    .nav { display:flex; justify-content: space-between; align-items:center; padding: 16px 0; }
+    .logo { font-size:1.5rem; font-weight:800; color: var(--brand); }
+    nav ul { display:flex; gap:1rem; list-style:none; flex-wrap:wrap; }
+    nav a { padding:.5rem .8rem; border-radius:999px; transition: background .3s, color .3s; }
+    nav a:hover, nav a.active { background: var(--brand); color:#fff; }
+
+    .hero { display:flex; flex-direction:column; align-items: center; justify-content: center; text-align: center; padding:80px 20px; background: linear-gradient(135deg, #ffece5, #fff8f1); position: relative; overflow:hidden; }
+    .hero h1 { font-size: clamp(2rem, 5vw, 3.5rem); color: var(--brand-dark); margin-bottom:1rem; opacity:0; transform: translateY(30px); animation: fadeUp 1s forwards ease-out; }
+    .hero p { font-size:1.2rem; max-width:600px; color: var(--muted); margin-bottom:2rem; opacity:0; transform: translateY(30px); animation: fadeUp 1s forwards ease-out 0.4s; }
+    .hero .cta-buttons { display:flex; gap: 1rem; flex-wrap:wrap; opacity:0; transform: translateY(30px); animation: fadeUp 1s forwards ease-out 0.8s; }
+    .btn { display:inline-flex; align-items:center; justify-content:center; gap:.5rem; background: var(--brand); color:#fff; border: none; border-radius:999px; padding:.8rem 1.4rem; font-size:1rem; cursor:pointer; transition: transform .3s, box-shadow .3s; }
+    .btn.secondary { background: var(--brand-dark); }
+    .btn:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,.1); }
+
+    section { padding: 60px 0; }
+    .section-title { font-size:2rem; margin-bottom:1rem; text-align:center; position: relative; }
+    .section-title::after { content:""; width:80px; height:4px; background: var(--accent); display:block; margin:8px auto 0; border-radius:2px; }
+
+    .grid { display:grid; gap:20px; }
+    /* products */
+    .products { grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); }
+    .card { background:var(--card-bg); border:1px solid var(--line); border-radius: var(--radius); padding:20px; box-shadow: var(--shadow); opacity:0; transform: translateY(40px); transition: opacity .6s ease-out, transform .6s ease-out; }
+    .card.visible { opacity:1; transform: translateY(0); }
+    .card img { border-radius: var(--radius-sm); object-fit:cover; height: 180px; width:100%; }
+    .card h3 { margin:1rem 0 .5rem; font-size:1.25rem; color: var(--brand-dark); }
+    .card .price { font-weight:700; font-size:1.1rem; }
+    .card .price .mrp { text-decoration: line-through; color: var(--muted); font-weight:400; margin-left: .5rem; }
+
+    /* features */
+    .features { grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); text-align:center; }
+    .feature-box { padding:20px; border-radius: var(--radius); background:#fff; box-shadow: var(--shadow); transition: transform .3s; opacity:0; transform: scale(0.8); }
+    .feature-box.visible { opacity:1; transform: scale(1); }
+    .feature-box:hover { transform: scale(1.05); }
+
+    /* testimonials */
+    .testimonials { grid-template-columns: repeat(auto-fit, minmax(300px,1fr)); }
+    .testimonial-card { background:#fff; border:1px solid var(--line); border-radius: var(--radius); padding:20px; box-shadow: var(--shadow); opacity:0; transform: translateY(40px); }
+    .testimonial-card.visible { opacity:1; transform: translateY(0); }
+    .testimonial-card .author { margin-top:1rem; font-weight:700; color: var(--brand-dark); }
+
+    /* contact / about content */
+    .about-content, .contact-content { max-width:800px; margin:auto; text-align:center; line-height:1.6; color: var(--muted); }
+
+    /* cart drawer */
+    .cart-drawer {
+      position: fixed;
+      top:0; right:0; bottom:0;
+      width:100%; max-width:420px;
+      background: #fff;
+      border-left:1px solid var(--line);
+      transform: translateX(100%);
+      transition: transform .3s ease-out;
+      z-index: 200;
+      display:flex;
+      flex-direction: column;
+    }
+    .cart-drawer.show { transform: translateX(0); }
+    .cart-body { flex:1; overflow-y:auto; padding:20px; }
+    .cart-item { display:flex; justify-content: space-between; align-items:center; margin-bottom:15px; }
+    .cart-item span { flex:1; }
+    .cart-footer { padding:20px; border-top:1px solid var(--line); }
+    .totals { margin-bottom:15px; }
+    .totals .line { display:flex; justify-content: space-between; margin-bottom:8px; }
+    .totals .line b { }
+    .totals .grand { font-size:1.25rem; font-weight:700; }
+
+    footer { background:#fff; padding:40px 20px; text-align:center; color: var(--muted); font-size:.9rem; border-top:1px solid var(--line); }
+
+    @keyframes fadeUp {
+      from { opacity:0; transform: translateY(30px); }
+      to { opacity:1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container nav">
+      <div class="logo">Prepease</div>
+      <nav>
+        <ul id="navLinks">
+          <li><a href="#home" class="active">Home</a></li>
+          <li><a href="#products">Products</a></li>
+          <li><a href="#features">Why Prepease</a></li>
+          <li><a href="#testimonials">Testimonials</a></li>
+          <li><a href="#about">About Us</a></li>
+          <li><a href="#contact">Contact</a></li>
+          <li><a href="#cart">Cart (<span id="cartCount">0</span>)</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+      <div class="container">
+        <h1>Restaurant-Quality Sauces & Spreads</h1>
+        <p>100% vegetarian, preservative-free, chef-crafted. Elevated flavors for every dish, delivered to your home with Cash on Delivery.</p>
+        <div class="cta-buttons">
+          <button class="btn" onclick="scrollToSection('products')">Shop Now</button>
+          <button class="btn secondary" onclick="scrollToSection('contact')">Get in Touch</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Products Section -->
+    <section id="products" class="section">
+      <div class="container">
+        <div class="section-title">Our Products</div>
+        <div class="grid products" id="productGrid">
+          <!-- Product cards inserted by JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="section">
+      <div class="container">
+        <div class="section-title">Why Prepease</div>
+        <div class="grid features">
+          <div class="feature-box"><h3>Chef Crafted</h3><p>Developed by chefs to deliver balanced and bold flavors every time.</p></div>
+          <div class="feature-box"><h3>100% Vegetarian</h3><p>No meat, no eggs. Pure, plant-based flavor.</p></div>
+          <div class="feature-box"><h3>No Preservatives</h3><p>Clean label, natural ingredients you can trust.</p></div>
+          <div class="feature-box"><h3>Quick & Easy</h3><p>Use-and-cook products made to save you time.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section id="testimonials" class="section">
+      <div class="container">
+        <div class="section-title">What Our Customers Say</div>
+        <div class="grid testimonials" id="testimonialsGrid">
+          <!-- testimonial cards by JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- About Us Section -->
+    <section id="about" class="section">
+      <div class="container about-content">
+        <div class="section-title">About Us</div>
+        <p>Prepease started with a simple idea: your kitchen deserves sauces and spreads that taste unforgettable, but don’t demand hours of prep. We combine heritage spices and modern techniques to bring you products that are bold, balanced, and reliable.</p>
+        <p>Operating from Nagpur, India, we partner with local farmers for fresh ingredients, use minimal processing, and test every batch for consistency. We believe in sustainability, clean food, and culinary delight.</p>
+      </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="section">
+      <div class="container contact-content">
+        <div class="section-title">Get in Touch</div>
+        <p>Have questions or want bulk orders? We'd love to hear from you.</p>
+        <form id="contactForm" style="max-width:500px; margin:auto;">
+          <div style="margin-bottom:10px;"><input type="text" name="name" placeholder="Name" required style="width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;"></div>
+          <div style="margin-bottom:10px;"><input type="email" name="email" placeholder="Email" required style="width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;"></div>
+          <div style="margin-bottom:10px;"><textarea name="message" placeholder="Your message..." required style="width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;min-height:100px;"></textarea></div>
+          <div><button class="btn" type="submit">Send Message</button></div>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <!-- Cart Drawer -->
+  <div class="cart-drawer" id="cartDrawer">
+    <header style="padding:20px; border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content: space-between;">
+      <div><strong>Your Cart</strong></div>
+      <button onclick="toggleCart(false)" style="font-size:1.2rem; background:none; border:none; cursor:pointer;">✖</button>
+    </header>
+    <div class="cart-body" id="cartBody">
+      <!-- items here -->
+    </div>
+    <div class="cart-footer">
+      <div class="totals">
+        <div class="line"><span>Subtotal:</span><b id="subtotal">₹0</b></div>
+        <div class="line"><span>COD Fee:</span><b id="codFee">₹0</b></div>
+        <div class="line grand"><span>Total:</span><b id="grandTotal">₹0</b></div>
+      </div>
+      <button class="btn" style="width:100%;" onclick="checkoutCOD()">Place Order (Cash on Delivery)</button>
+    </div>
+  </div>
+
+  <footer>
+    <div class="container">
+      <p>© <span id="year"></span> Prepease. All Rights Reserved.</p>
+  </div>
+  </footer>
+
+  <script>
+    // Config
+    const PRODUCTS = [
+      { id:"P1", name:"Schezza Base (250 g)", price:179, mrp:199, img:"https://via.placeholder.com/300x180?text=Schezza+Base" },
+      { id:"P2", name:"Schezzo Spread (250 g)", price:169, mrp:189, img:"https://via.placeholder.com/300x180?text=Schezzo+Spread" },
+      { id:"P3", name:"Tandoori Flame Base", price:189, mrp:209, img:"https://via.placeholder.com/300x180?text=Tandoori+Flame" },
+      { id:"P4", name:"Royal Tikka Base", price:199, mrp:219, img:"https://via.placeholder.com/300x180?text=Royal+Tikka" },
+      { id:"P5", name:"Heritage Tikka Spread", price:179, mrp:199, img:"https://via.placeholder.com/300x180?text=Heritage+Tikka" },
+      { id:"P6", name:"Tandoori Grill Spread", price:169, mrp:189, img:"https://via.placeholder.com/300x180?text=Tandoori+Grill" }
+    ];
+    const TESTIMONIALS = [
+      { author:"Arjun K., Cloud Kitchen", text:"Schezza Base changed how quickly we prep pizzas — flavour is consistent every time." },
+      { author:"Priya B., Bangalore", text:"Love the spreads — creamy, spicy, just perfect. Easy to use and top quality." },
+      { author:"Rahul S., Home Chef", text:"My kids ask for more! The flavours are real and I don’t worry about preservatives." }
+    ];
+
+    let state = { cart: [] };
+
+    function scrollToSection(id) {
+      document.getElementById(id).scrollIntoView({behavior:"smooth"});
+    }
+
+    function renderProducts() {
+      const grid = document.getElementById("productGrid");
+      grid.innerHTML = "";
+      PRODUCTS.forEach((p, idx) => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <img src="${p.img}" alt="${p.name}">
+          <h3>${p.name}</h3>
+          <div class="price">₹${p.price}<span class="mrp">₹${p.mrp}</span></div>
+          <button class="btn" onclick="addToCart('${p.id}')">Add to Cart</button>
+        `;
+        grid.appendChild(card);
+      });
+      setupScrollReveal();
+    }
+
+    function renderTestimonials() {
+      const grid = document.getElementById("testimonialsGrid");
+      grid.innerHTML = "";
+      TESTIMONIALS.forEach((t, idx) => {
+        const card = document.createElement("div");
+        card.className = "testimonial-card";
+        card.innerHTML = `
+          <p>"${t.text}"</p>
+          <div class="author">— ${t.author}</div>
+        `;
+        grid.appendChild(card);
+      });
+      setupScrollReveal();
+    }
+
+    function addToCart(pid) {
+      const item = state.cart.find(c=>c.id===pid);
+      if (item) item.qty++;
+      else state.cart.push({ id: pid, qty:1 });
+      updateCartCount();
+      renderCart();
+      toggleCart(true);
+    }
+
+    function updateCartCount() {
+      const count = state.cart.reduce((sum, c)=> sum + c.qty,0);
+      document.getElementById("cartCount").textContent = count;
+    }
+
+    function renderCart() {
+      const body = document.getElementById("cartBody");
+      body.innerHTML = "";
+      if (state.cart.length === 0) {
+        body.innerHTML = "<p>Your cart is empty.</p>";
+        document.getElementById("subtotal").textContent = "₹0";
+        document.getElementById("codFee").textContent = "₹0";
+        document.getElementById("grandTotal").textContent = "₹0";
+        return;
+      }
+      let subtotal = 0;
+      state.cart.forEach(ci => {
+        const prod = PRODUCTS.find(p => p.id === ci.id);
+        const line = prod.price * ci.qty;
+        subtotal += line;
+        const div = document.createElement("div");
+        div.className = "cart-item";
+        div.innerHTML = `
+          <span>${prod.name} × ${ci.qty}</span>
+          <span>₹${line}</span>
+        `;
+        body.appendChild(div);
+      });
+      const COD_FEE = 25;
+      const grand = subtotal + COD_FEE;
+      document.getElementById("subtotal").textContent = `₹${subtotal}`;
+      document.getElementById("codFee").textContent = `₹${COD_FEE}`;
+      document.getElementById("grandTotal").textContent = `₹${grand}`;
+    }
+
+    function toggleCart(show) {
+      const cd = document.getElementById("cartDrawer");
+      if (show) cd.classList.add("show");
+      else cd.classList.remove("show");
+    }
+
+    function checkoutCOD() {
+      if (state.cart.length === 0) {
+        alert("Add some products first!");
+        return;
+      }
+      // Here you can collect address etc or send order
+      alert("Thank you! Your order has been placed with Cash on Delivery.");
+      state.cart = [];
+      updateCartCount();
+      renderCart();
+      toggleCart(false);
+    }
+
+    // Scroll reveal: show when visible
+    function setupScrollReveal() {
+      const observer = new IntersectionObserver((entries, obs) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("visible");
+            obs.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.2 });
+      document.querySelectorAll('.card, .feature-box, .testimonial-card').forEach(el => {
+        if (!el.classList.contains("visible")) {
+          observer.observe(el);
+        }
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      renderProducts();
+      renderTestimonials();
+      updateCartCount();
+      renderCart();
+      setupScrollReveal();
+      document.getElementById("year").textContent = new Date().getFullYear();
+    });
+
+    // Contact form (front-end only)
+    document.getElementById("contactForm").addEventListener("submit", function(e){
+      e.preventDefault();
+      alert("Thanks for contacting us!");
+      e.target.reset();
+    });
+  </script>
+</body>
+</html>
